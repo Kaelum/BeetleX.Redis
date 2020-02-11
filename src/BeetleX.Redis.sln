@@ -1,13 +1,24 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28010.2036
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29806.167
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BeetleX.Redis", "BeetleX.Redis\BeetleX.Redis.csproj", "{652212D7-9390-4E01-B287-9FCA3E0600E0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PerformanceTest", "PerformanceTest\PerformanceTest.csproj", "{2E1DA90C-ACBD-42E4-9B94-763F339C63B7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PerformanceTest", "PerformanceTest\PerformanceTest.csproj", "{2E1DA90C-ACBD-42E4-9B94-763F339C63B7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BeetleX.Redis.Samples", "BeetleX.Redis.Samples\BeetleX.Redis.Samples.csproj", "{76E3FA8B-B1FD-41A2-A719-763E373FA10D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BeetleX.Redis.Samples", "BeetleX.Redis.Samples\BeetleX.Redis.Samples.csproj", "{76E3FA8B-B1FD-41A2-A719-763E373FA10D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".git", ".git", "{97ED4A0E-61A0-4EAA-BFC6-20BD579FC0BC}"
+	ProjectSection(SolutionItems) = preProject
+		..\.gitignore = ..\.gitignore
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".resources", ".resources", "{75F38212-AC59-43F4-8D98-6988B2D22DCC}"
+	ProjectSection(SolutionItems) = preProject
+		..\LICENSE = ..\LICENSE
+		..\README.md = ..\README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

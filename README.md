@@ -1,6 +1,13 @@
+## Note
+Forked from [IKende/BeetleX.Redis](https://github.com/IKende/BeetleX.Redis), so that we can have a
+stable build, and make interface changes to make it similar to other libraries.  My initial
+performance tests showed that this library doesn't peg the CPU at 100%, works at least 3x better in
+a multi-threaded environment, and is significantly more performant than StackExcahnge.Redis.
+
 # BeetleX.Redis
-A high-performance async/non-blocking  redis client components for dotnet core,default support json and protobuf data format
-,support ssl
+A high-performance async/non-blocking  redis client components for dotnet core,default support json
+and protobuf data format,support ssl
+
 ## Support commands
 [AUTH](https://redis.io/commands/AUTH)|
 [BLPOP](https://redis.io/commands/BLPOP)|
