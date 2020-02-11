@@ -9,11 +9,23 @@
     <Description>A high-performance async/non-blocking  redis client components for dotnet core,default support json and protobuf data format</Description>
     <PackageLicenseUrl>https://github.com/Kaelum/BeetleX.Redis/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/Kaelum/BeetleX.Redis</PackageProjectUrl>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\.resources\BeetleX.Redis.snk</AssemblyOriginatorKeyFile>
+    <DelaySign>false</DelaySign>
+    <Platforms>AnyCPU;x64;x86</Platforms>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\.resources\BeetleX.Redis.snk" Link="Properties\BeetleX.Redis.snk" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="BeetleX" Version="1.4.9.4" />
     <PackageReference Include="MessagePack" Version="2.1.90" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
   </ItemGroup>
 
 </Project>
