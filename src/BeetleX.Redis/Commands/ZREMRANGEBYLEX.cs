@@ -29,7 +29,9 @@ namespace BeetleX.Redis.Commands
             AddText(Key);
             AddText(Min);
             if (!string.IsNullOrEmpty(Max))
-                AddText(Max);
-        }
+			{
+				AddText(Max);
+			}
+		}
     }
 }

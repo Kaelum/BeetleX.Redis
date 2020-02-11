@@ -171,8 +171,10 @@ namespace BeetleX.Redis
         private void ReOnSubscrib()
         {
             if (mDisposed == 0)
-                mTimer = new System.Threading.Timer(OnSubscrib, null, 2000, 2000);
-        }
+			{
+				mTimer = new System.Threading.Timer(OnSubscrib, null, 2000, 2000);
+			}
+		}
 
         private async void OnSubscrib(object state)
         {
@@ -184,8 +186,11 @@ namespace BeetleX.Redis
                     mTimer = null;
                 }
                 if (redisClient != null)
-                    redisClient.TcpClient.DisConnect();
-                Result result;
+				{
+					redisClient.TcpClient.DisConnect();
+				}
+
+				Result result;
                 RedisHost host = mDB.Host.GetWriteHost();
                 if (host == null)
                 {

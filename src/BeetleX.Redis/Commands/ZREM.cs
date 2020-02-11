@@ -25,7 +25,9 @@ namespace BeetleX.Redis.Commands
             base.OnExecute();
             AddText(Key);
             foreach (string item in Members)
-                AddText(item);
-        }
+			{
+				AddText(item);
+			}
+		}
     }
 }

@@ -8,7 +8,7 @@ namespace BeetleX.Redis.Commands
     {
         public LREM(string key, int count, object value, IDataFormater dataFormater = null)
         {
-            this.DataFormater = dataFormater;
+            DataFormater = dataFormater;
             Key = key;
             Count = count;
             Value = value;

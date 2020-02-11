@@ -9,7 +9,7 @@ namespace BeetleX.Redis.Commands
 
         public HGETALL(string key, IDataFormater dataFormater)
         {
-            this.DataFormater = dataFormater;
+            DataFormater = dataFormater;
             Key = key;
         }
 

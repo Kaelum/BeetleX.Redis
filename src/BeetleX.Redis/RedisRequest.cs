@@ -22,8 +22,8 @@ namespace BeetleX.Redis
 
         private void OnError(IClient c, ClientErrorArgs e)
         {
-            if (e.Error is BeetleX.BXException || e.Error is System.Net.Sockets.SocketException ||
-                e.Error is System.ObjectDisposedException)
+            if (e.Error is BXException || e.Error is System.Net.Sockets.SocketException ||
+				e.Error is ObjectDisposedException)
             {
                 c.DisConnect();
                 OnCompleted(ResultType.NetError, e.Error.Message);
@@ -265,8 +265,10 @@ namespace BeetleX.Redis
                 }
             }
             if (pipeStream.Length > 0)
-                goto START;
-        }
+			{
+				goto START;
+			}
+		}
 
         public Action<RedisRequest> Completed { get; set; }
 

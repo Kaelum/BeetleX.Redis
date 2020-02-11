@@ -15,7 +15,7 @@ namespace BeetleX.Redis.Commands
 
         public override string Name => "MSET";
 
-        private List<Tuple<String, Object>> mValues { get; set; } = new List<Tuple<string, object>>();
+        private List<Tuple<string, object>> mValues { get; set; } = new List<Tuple<string, object>>();
 
         public MSET this[string name, object data]
         {

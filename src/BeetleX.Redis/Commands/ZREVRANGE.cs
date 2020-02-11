@@ -33,7 +33,9 @@ namespace BeetleX.Redis.Commands
             AddText(mStart);
             AddText(mStop);
             if (Withscores)
-                AddText("WITHSCORES");
-        }
+			{
+				AddText("WITHSCORES");
+			}
+		}
     }
 }

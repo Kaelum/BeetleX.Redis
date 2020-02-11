@@ -98,7 +98,7 @@ namespace BeetleX.Redis
                 bool isNew;
                 if (client.TcpClient.Connect(out isNew))
                 {
-                    this.Available = true;
+                    Available = true;
                     if (!string.IsNullOrEmpty(Password))
                     {
                         Commands.AUTH auth = new Commands.AUTH(Password);
@@ -108,8 +108,10 @@ namespace BeetleX.Redis
                         if (task.Result.ResultType == ResultType.DataError ||
                             task.Result.ResultType == ResultType.Error
                             || task.Result.ResultType == ResultType.NetError)
-                            return task.Result;
-                    }
+						{
+							return task.Result;
+						}
+					}
                     Commands.SELECT select = new Commands.SELECT(DB);
 					RedisRequest req = new RedisRequest(null, client, select, typeof(string));
 					Task<Result> t = req.Execute();
@@ -118,7 +120,7 @@ namespace BeetleX.Redis
                 }
                 else
                 {
-                    this.Available = false;
+                    Available = false;
                     return new Result { ResultType = ResultType.NetError, Messge = client.TcpClient.LastError.Message };
                 }
             }
@@ -144,8 +146,10 @@ namespace BeetleX.Redis
                 }
             }
             if (item != null)
-                item.SetResult(client);
-        }
+			{
+				item.SetResult(client);
+			}
+		}
 
         public void Dispose()
         {

@@ -142,7 +142,7 @@ namespace BeetleX.Redis.Samples
         }
 
 
-        public static DataHelper Data => DataHelper.Defalut;
+        public static DB Data => DB.Defalut;
 
         private static void Line()
         {

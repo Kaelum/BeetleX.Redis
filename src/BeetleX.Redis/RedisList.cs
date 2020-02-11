@@ -56,8 +56,11 @@ namespace BeetleX.Redis
             cmd.Reader = OnBlockingRead;
 			Result result = await DB.Execute(cmd, typeof(T));
             if (result.IsError)
-                throw new RedisException(result.Messge);
-            return (T)result.Value;
+			{
+				throw new RedisException(result.Messge);
+			}
+
+			return (T)result.Value;
         }
 
         public async ValueTask<T> BLPop(int timeout = 0)
@@ -66,8 +69,11 @@ namespace BeetleX.Redis
             cmd.Reader = OnBlockingRead;
 			Result result = await DB.Execute(cmd, typeof(T));
             if (result.IsError)
-                throw new RedisException(result.Messge);
-            return (T)result.Value;
+			{
+				throw new RedisException(result.Messge);
+			}
+
+			return (T)result.Value;
         }
 
         public async ValueTask<T> BRPopLPush(string dest, int timeout = 0)
@@ -76,8 +82,11 @@ namespace BeetleX.Redis
             cmd.Reader = OnBlockingRead;
 			Result result = await DB.Execute(cmd, typeof(T));
             if (result.IsError)
-                throw new RedisException(result.Messge);
-            return (T)result.Value;
+			{
+				throw new RedisException(result.Messge);
+			}
+
+			return (T)result.Value;
         }
 
         public async ValueTask<T> Index(int index)
@@ -85,8 +94,11 @@ namespace BeetleX.Redis
             Commands.LINDEX cmd = new Commands.LINDEX(Key, index, DataFormater);
 			Result result = await DB.Execute(cmd, typeof(T));
             if (result.IsError)
-                throw new RedisException(result.Messge);
-            return (T)result.Value;
+			{
+				throw new RedisException(result.Messge);
+			}
+
+			return (T)result.Value;
         }
 
         public async ValueTask<long> Insert(bool before, T ofValue, T value)
@@ -95,8 +107,11 @@ namespace BeetleX.Redis
                 Key, ofValue, before, value, DataFormater);
 			Result result = await DB.Execute(cmd, typeof(T));
             if (result.IsError)
-                throw new RedisException(result.Messge);
-            return (long)result.Value;
+			{
+				throw new RedisException(result.Messge);
+			}
+
+			return (long)result.Value;
         }
 
         public async ValueTask<long> Len()
@@ -104,8 +119,11 @@ namespace BeetleX.Redis
             Commands.LLEN cmd = new Commands.LLEN(Key);
 			Result result = await DB.Execute(cmd, typeof(T));
             if (result.IsError)
-                throw new RedisException(result.Messge);
-            return (long)result.Value;
+			{
+				throw new RedisException(result.Messge);
+			}
+
+			return (long)result.Value;
         }
 
         public async ValueTask<T> Pop()
@@ -113,19 +131,28 @@ namespace BeetleX.Redis
             Commands.LPOP cmd = new Commands.LPOP(Key, DataFormater);
 			Result result = await DB.Execute(cmd, typeof(T));
             if (result.IsError)
-                throw new RedisException(result.Messge);
-            return (T)result.Value;
+			{
+				throw new RedisException(result.Messge);
+			}
+
+			return (T)result.Value;
         }
 
         public async ValueTask<long> Push(params T[] values)
         {
             Commands.LPUSH cmd = new Commands.LPUSH(Key, DataFormater);
             for (int i = 0; i < values.Length; i++)
-                cmd.Values.Add(values[i]);
+			{
+				cmd.Values.Add(values[i]);
+			}
+
 			Result result = await DB.Execute(cmd, typeof(T));
             if (result.IsError)
-                throw new RedisException(result.Messge);
-            return (long)result.Value;
+			{
+				throw new RedisException(result.Messge);
+			}
+
+			return (long)result.Value;
         }
 
         public async ValueTask<long> PushX(T value)
@@ -133,8 +160,11 @@ namespace BeetleX.Redis
             Commands.LPUSHX cmd = new Commands.LPUSHX(Key, value, DataFormater);
 			Result result = await DB.Execute(cmd, typeof(T));
             if (result.IsError)
-                throw new RedisException(result.Messge);
-            return (long)result.Value;
+			{
+				throw new RedisException(result.Messge);
+			}
+
+			return (long)result.Value;
         }
 
         public async ValueTask<T[]> Range(int start, int stop)
@@ -143,8 +173,11 @@ namespace BeetleX.Redis
                 DataFormater);
 			Result result = await DB.Execute(cmd, typeof(T));
             if (result.IsError)
-                throw new RedisException(result.Messge);
-            return (from a in result.Data select (T)a.Data).ToArray();
+			{
+				throw new RedisException(result.Messge);
+			}
+
+			return (from a in result.Data select (T)a.Data).ToArray();
         }
 
         public async ValueTask<long> Rem(int count, T value)
@@ -152,8 +185,11 @@ namespace BeetleX.Redis
             Commands.LREM cmd = new Commands.LREM(Key, count, value, DataFormater);
 			Result result = await DB.Execute(cmd, typeof(T));
             if (result.IsError)
-                throw new RedisException(result.Messge);
-            return (long)result.Value;
+			{
+				throw new RedisException(result.Messge);
+			}
+
+			return (long)result.Value;
         }
 
         public async ValueTask<string> Set(int index, T value)
@@ -161,8 +197,11 @@ namespace BeetleX.Redis
             Commands.LSET cmd = new Commands.LSET(Key, index, value, DataFormater);
 			Result result = await DB.Execute(cmd, typeof(T));
             if (result.IsError)
-                throw new RedisException(result.Messge);
-            return (string)result.Value;
+			{
+				throw new RedisException(result.Messge);
+			}
+
+			return (string)result.Value;
         }
 
         public async ValueTask<string> Trim(int start, int stop)
@@ -170,8 +209,11 @@ namespace BeetleX.Redis
             Commands.LTRIM cmd = new Commands.LTRIM(Key, start, stop);
 			Result result = await DB.Execute(cmd, typeof(T));
             if (result.IsError)
-                throw new RedisException(result.Messge);
-            return (string)result.Value;
+			{
+				throw new RedisException(result.Messge);
+			}
+
+			return (string)result.Value;
         }
 
         public async ValueTask<T> RPop()
@@ -179,8 +221,11 @@ namespace BeetleX.Redis
             Commands.RPOP cmd = new Commands.RPOP(Key, DataFormater);
 			Result result = await DB.Execute(cmd, typeof(T));
             if (result.IsError)
-                throw new RedisException(result.Messge);
-            return (T)result.Value;
+			{
+				throw new RedisException(result.Messge);
+			}
+
+			return (T)result.Value;
         }
 
         public async ValueTask<T> RPopLPush(string dest)
@@ -188,8 +233,11 @@ namespace BeetleX.Redis
             Commands.RPOPLPUSH cmd = new Commands.RPOPLPUSH(Key, dest, DataFormater);
 			Result result = await DB.Execute(cmd, typeof(T));
             if (result.IsError)
-                throw new RedisException(result.Messge);
-            return (T)result.Value;
+			{
+				throw new RedisException(result.Messge);
+			}
+
+			return (T)result.Value;
         }
 
         public async ValueTask<long> RPush(params T[] values)
@@ -201,8 +249,11 @@ namespace BeetleX.Redis
             }
 			Result result = await DB.Execute(cmd, typeof(T));
             if (result.IsError)
-                throw new RedisException(result.Messge);
-            return (long)result.Value;
+			{
+				throw new RedisException(result.Messge);
+			}
+
+			return (long)result.Value;
         }
 
         public async ValueTask<long> RPushX(T value)
@@ -210,8 +261,11 @@ namespace BeetleX.Redis
             Commands.RPUSHX cmd = new Commands.RPUSHX(Key, value, DataFormater);
 			Result result = await DB.Execute(cmd, typeof(T));
             if (result.IsError)
-                throw new RedisException(result.Messge);
-            return (long)result.Value;
+			{
+				throw new RedisException(result.Messge);
+			}
+
+			return (long)result.Value;
         }
 
     }

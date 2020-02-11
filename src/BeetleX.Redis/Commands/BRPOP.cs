@@ -25,8 +25,11 @@ namespace BeetleX.Redis.Commands
         {
             base.OnExecute();
             for (int i = 0; i < Key.Length; i++)
-                AddText(Key[i]);
-            AddText(Timeout);
+			{
+				AddText(Key[i]);
+			}
+
+			AddText(Timeout);
         }
     }
 }

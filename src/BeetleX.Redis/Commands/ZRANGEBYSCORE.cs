@@ -36,12 +36,21 @@ namespace BeetleX.Redis.Commands
             base.OnExecute();
             AddText(Key);
             if (!string.IsNullOrEmpty(Min))
-                AddText(Min);
-            if (!string.IsNullOrEmpty(Max))
-                AddText(Max);
-            if (Withscores)
-                AddText("WITHSCORES");
-            if(Offset !=null && Count !=null)
+			{
+				AddText(Min);
+			}
+
+			if (!string.IsNullOrEmpty(Max))
+			{
+				AddText(Max);
+			}
+
+			if (Withscores)
+			{
+				AddText("WITHSCORES");
+			}
+
+			if (Offset !=null && Count !=null)
             {
                 AddText("LIMIT").AddText(Offset.Value).AddText(Count.Value);
             }

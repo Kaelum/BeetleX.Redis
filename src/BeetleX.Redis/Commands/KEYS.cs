@@ -12,7 +12,7 @@ namespace BeetleX.Redis.Commands
             Pattern = pattern;
         }
 
-        public String Pattern { get; set; }
+        public string Pattern { get; set; }
 
 
         public override bool Read => true;

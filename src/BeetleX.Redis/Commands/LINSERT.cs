@@ -32,10 +32,15 @@ namespace BeetleX.Redis.Commands
             base.OnExecute();
             AddText(Key);
             if (Before)
-                AddText("BEFORE");
-            else
-                AddText("AFTER");
-            AddData(Value);
+			{
+				AddText("BEFORE");
+			}
+			else
+			{
+				AddText("AFTER");
+			}
+
+			AddData(Value);
             AddData(AddValue);
 
         }

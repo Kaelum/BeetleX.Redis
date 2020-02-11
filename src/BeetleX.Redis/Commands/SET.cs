@@ -10,7 +10,7 @@ namespace BeetleX.Redis.Commands
         {
             Key = key;
             Data = data;
-            this.DataFormater = formater;
+            DataFormater = formater;
         }
 
         public int TimeOut { get; set; }

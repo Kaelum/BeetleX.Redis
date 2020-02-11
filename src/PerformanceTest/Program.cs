@@ -14,8 +14,11 @@ namespace PerformanceTest
             benchmark.Register(typeof(Program).Assembly);
             benchmark.Start();
             if (Environment.OSVersion.Platform == PlatformID.Win32NT)
-                benchmark.OpenWeb();
-            Console.Read();
+			{
+				benchmark.OpenWeb();
+			}
+
+			Console.Read();
             //Test();
             //Console.Read();
         }

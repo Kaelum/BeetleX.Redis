@@ -9,42 +9,61 @@ namespace BeetleX.Redis
 {
 	public abstract class Command
 	{
+		private static readonly List<byte[]> _msgHeaderLenData = new List<byte[]>();
+		private static readonly List<byte[]> _bodyHeaderLenData = new List<byte[]>();
+		private static byte[] _lineBytes;
+
+		public const int MAX_LENGTH_TABLE = 1024 * 32;
+
+		private readonly List<CommandParameter> _mParameters = new List<CommandParameter>();
+		private readonly ConcurrentDictionary<string, byte[]> _mCommandBuffers = new ConcurrentDictionary<string, byte[]>();
+
+
+		#region Constructors
+
 		static Command()
 		{
-			LineBytes = Encoding.ASCII.GetBytes("\r\n");
+			_lineBytes = Encoding.ASCII.GetBytes("\r\n");
+
 			for (int i = 1; i <= MAX_LENGTH_TABLE; i++)
 			{
-				mMsgHeaderLenData.Add(Encoding.UTF8.GetBytes($"*{i}\r\n"));
-				mBodyHeaderLenData.Add(Encoding.UTF8.GetBytes($"${i}\r\n"));
+				_msgHeaderLenData.Add(Encoding.UTF8.GetBytes($"*{i}\r\n"));
+				_bodyHeaderLenData.Add(Encoding.UTF8.GetBytes($"${i}\r\n"));
 			}
-		}
-
-		private const int MAX_LENGTH_TABLE = 1024 * 32;
-
-		private static byte[] LineBytes;
-
-		public static List<byte[]> mMsgHeaderLenData = new List<byte[]>();
-
-		public static byte[] GetMsgHeaderLengthData(int length)
-		{
-			if (length > MAX_LENGTH_TABLE)
-				return null;
-			return mMsgHeaderLenData[length - 1];
-		}
-
-		public static List<byte[]> mBodyHeaderLenData = new List<byte[]>();
-
-		public static byte[] GetBodyHeaderLenData(int length)
-		{
-			if (length > MAX_LENGTH_TABLE)
-				return null;
-			return mBodyHeaderLenData[length - 1];
 		}
 
 		public Command()
 		{
 
 		}
+
+		#endregion
+
+		#region Public Static Methods
+
+		public static byte[] GetMsgHeaderLengthData(int length)
+		{
+			if (length > MAX_LENGTH_TABLE)
+			{
+				return null;
+			}
+
+			return _msgHeaderLenData[length - 1];
+		}
+
+		public static byte[] GetBodyHeaderLenData(int length)
+		{
+			if (length > MAX_LENGTH_TABLE)
+			{
+				return null;
+			}
+
+			return _bodyHeaderLenData[length - 1];
+		}
+
+		#endregion
+
+		#region Public Properties
 
 		public Func<Result, PipeStream, RedisClient, bool> Reader { get; set; }
 
@@ -54,67 +73,67 @@ namespace BeetleX.Redis
 
 		public abstract string Name { get; }
 
-		private List<CommandParameter> mParameters = new List<CommandParameter>();
+		#endregion
 
-		private ConcurrentDictionary<string, byte[]> mCommandBuffers = new ConcurrentDictionary<string, byte[]>();
-
-		public Command AddText(object text)
-		{
-			mParameters.Add(new CommandParameter { Value = text });
-			return this;
-		}
+		#region Public Methods
 
 		public Command AddData(object data)
 		{
-			mParameters.Add(new CommandParameter { Value = data, DataFormater = this.DataFormater, Serialize = true });
+			_mParameters.Add(new CommandParameter { Value = data, DataFormater = DataFormater, Serialize = true });
 			return this;
 		}
 
-		public virtual void OnExecute()
+		public Command AddText(object text)
 		{
-			if (!mCommandBuffers.TryGetValue(Name, out byte[] cmdBuffer))
-			{
-				string value = $"${Name.Length}\r\n{Name}";
-				cmdBuffer = Encoding.ASCII.GetBytes(value);
-				mCommandBuffers[Name] = cmdBuffer;
-			}
-			mParameters.Add(new CommandParameter { ValueBuffer = cmdBuffer });
+			_mParameters.Add(new CommandParameter { Value = text });
+			return this;
 		}
 
 		public void Execute(RedisClient client, PipeStream stream)
 		{
 			OnExecute();
-			byte[] data = GetMsgHeaderLengthData(mParameters.Count);
+			byte[] data = GetMsgHeaderLengthData(_mParameters.Count);
 			if (data != null)
 			{
 				stream.Write(data, 0, data.Length);
 			}
 			else
 			{
-				string headerStr = $"*{mParameters.Count}\r\n";
+				string headerStr = $"*{_mParameters.Count}\r\n";
 				stream.Write(headerStr);
 			}
-			for (int i = 0; i < mParameters.Count; i++)
+			for (int i = 0; i < _mParameters.Count; i++)
 			{
-				mParameters[i].Write(client, stream);
+				_mParameters[i].Write(client, stream);
 			}
 		}
 
+		public virtual void OnExecute()
+		{
+			if (!_mCommandBuffers.TryGetValue(Name, out byte[] cmdBuffer))
+			{
+				string value = $"${Name.Length}\r\n{Name}";
+				cmdBuffer = Encoding.ASCII.GetBytes(value);
+				_mCommandBuffers[Name] = cmdBuffer;
+			}
+			_mParameters.Add(new CommandParameter { ValueBuffer = cmdBuffer });
+		}
+
+		#endregion
+
 		public class CommandParameter
 		{
-			public object Value { get; set; }
+			[ThreadStatic]
+			private static byte[] _buffer = null;
+
 
 			public IDataFormater DataFormater { get; set; }
 
+			public object Value { get; set; }
+
 			internal byte[] ValueBuffer { get; set; }
 
-			public bool Serialize
-			{
-				get; set;
-			} = false;
-
-			[ThreadStatic]
-			private static byte[] mBuffer = null;
+			public bool Serialize { get; set; } = false;
 
 			public void Write(RedisClient client, PipeStream stream)
 			{
@@ -128,13 +147,19 @@ namespace BeetleX.Redis
 				}
 				else
 				{
-					string value = Value as string;
-					if (value == null)
+					if (!(Value is string value))
+					{
 						value = Value.ToString();
-					if (mBuffer == null)
-						mBuffer = new byte[1024 * 1024];
-					int len = Encoding.UTF8.GetBytes(value, 0, value.Length, mBuffer, 0);
+					}
+
+					if (_buffer == null)
+					{
+						_buffer = new byte[1024 * 1024];
+					}
+
+					int len = Encoding.UTF8.GetBytes(value, 0, value.Length, _buffer, 0);
 					byte[] data = GetBodyHeaderLenData(len);
+
 					if (data != null)
 					{
 						stream.Write(data, 0, data.Length);
@@ -143,11 +168,12 @@ namespace BeetleX.Redis
 					{
 						stream.Write($"${len}\r\n");
 					}
-					stream.Write(mBuffer, 0, len);
+
+					stream.Write(_buffer, 0, len);
 				}
-				stream.Write(LineBytes, 0, 2);
+
+				stream.Write(_lineBytes, 0, 2);
 			}
 		}
-
 	}
 }

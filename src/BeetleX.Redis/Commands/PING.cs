@@ -21,7 +21,9 @@ namespace BeetleX.Redis.Commands
         {
             base.OnExecute();
             if (!string.IsNullOrEmpty(Message))
-                AddText(Message);
-        }
+			{
+				AddText(Message);
+			}
+		}
     }
 }

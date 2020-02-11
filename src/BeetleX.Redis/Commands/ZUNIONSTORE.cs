@@ -43,10 +43,14 @@ namespace BeetleX.Redis.Commands
             foreach ((string key, double weight) item in Items)
             {
                 if (item.weight == 0)
-                    AddText(1);
-                else
-                    AddText(item.weight);
-            }
+				{
+					AddText(1);
+				}
+				else
+				{
+					AddText(item.weight);
+				}
+			}
             AddText("AGGREGATE");
             AddText(Type);
 

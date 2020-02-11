@@ -25,7 +25,9 @@ namespace BeetleX.Redis.Commands
             base.OnExecute();
             AddText(Key);
             for (int i = 0; i < Fields.Length; i++)
-                AddText(Fields[i]);
-        }
+			{
+				AddText(Fields[i]);
+			}
+		}
     }
 }

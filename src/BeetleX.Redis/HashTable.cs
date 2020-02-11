@@ -25,7 +25,10 @@ namespace BeetleX.Redis
 			Commands.HDEL cmd = new Commands.HDEL(Key, fields);
 			Result result = await DB.Execute(cmd, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (long)result.Value;
 		}
 
@@ -34,7 +37,10 @@ namespace BeetleX.Redis
 			Commands.HEXISTS cmd = new Commands.HEXISTS(Key, field);
 			Result result = await DB.Execute(cmd, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (long)result.Value > 0;
 		}
 
@@ -43,7 +49,10 @@ namespace BeetleX.Redis
 			Commands.HGET cmd = new Commands.HGET(Key, field, DataFormater);
 			Result result = await DB.Execute(cmd, typeof(T));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (T)result.Value;
 		}
 
@@ -86,7 +95,10 @@ namespace BeetleX.Redis
 			Commands.HMGET cmd = new Commands.HMGET(Key, DataFormater, fields);
 			Result result = await DB.Execute(cmd, types);
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (from a in result.Data select a.Data).ToArray();
 
 		}
@@ -96,7 +108,10 @@ namespace BeetleX.Redis
 			Commands.HINCRBY cmd = new Commands.HINCRBY(Key, field, increment);
 			Result result = await DB.Execute(cmd, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (long)result.Value;
 		}
 
@@ -105,7 +120,10 @@ namespace BeetleX.Redis
 			Commands.HINCRBYFLOAT cmd = new Commands.HINCRBYFLOAT(Key, field, increment);
 			Result result = await DB.Execute(cmd, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return float.Parse((string)result.Value);
 		}
 
@@ -114,7 +132,10 @@ namespace BeetleX.Redis
 			Commands.HKEYS cmd = new Commands.HKEYS(Key);
 			Result result = await DB.Execute(cmd, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (from a in result.Data select (string)a.Data).ToArray();
 
 		}
@@ -124,7 +145,10 @@ namespace BeetleX.Redis
 			Commands.HLEN cmd = new Commands.HLEN(Key);
 			Result result = await DB.Execute(cmd, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (long)result.Value;
 		}
 
@@ -133,7 +157,10 @@ namespace BeetleX.Redis
 			Commands.HSET cmd = new Commands.HSET(Key, field, data, DataFormater);
 			Result result = await DB.Execute(cmd, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (long)result.Value;
 		}
 
@@ -146,7 +173,10 @@ namespace BeetleX.Redis
 			}
 			Result result = await DB.Execute(cmd, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (string)result.Value;
 		}
 
@@ -155,7 +185,10 @@ namespace BeetleX.Redis
 			Commands.HSETNX cmd = new Commands.HSETNX(Key, field, value, DataFormater);
 			Result result = await DB.Execute(cmd, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (long)result.Value;
 		}
 
@@ -164,7 +197,10 @@ namespace BeetleX.Redis
 			Commands.HSTRLEN cmd = new Commands.HSTRLEN(Key, field);
 			Result result = await DB.Execute(cmd, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (long)result.Value;
 		}
 	}

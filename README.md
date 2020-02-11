@@ -105,9 +105,6 @@ and protobuf data format,support ssl
 [ZREVRANK](https://redis.io/commands/ZREVRANK)|
 [ZSCORE](https://redis.io/commands/ZSCORE)|
 [ZUNIONSTORE](https://redis.io/commands/ZUNIONSTORE)|
-|
-## nuget
-https://www.nuget.org/packages/BeetleX.Redis/
 
 ## Setting
 ``` csharp

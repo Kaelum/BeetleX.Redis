@@ -1,58 +1,67 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace BeetleX.Redis
 {
 	public class RedisDB : IHostHandler
 	{
+		private readonly List<RedisHost> _writeHosts = new List<RedisHost>();
+		private readonly List<RedisHost> _readHosts = new List<RedisHost>();
+		private readonly Timer _detectionTime;
+
+		private RedisHost[] _writeActives = new RedisHost[0];
+		private RedisHost[] _readActives = new RedisHost[0];
+
+
+		#region Constructors
+
 		public RedisDB(int db = 0, IDataFormater dataFormater = null, IHostHandler hostHandler = null)
 		{
 			DB = db;
 			DataFormater = dataFormater;
+
 			if (hostHandler == null)
 			{
-				mDetectionTime = new System.Threading.Timer(OnDetection, null, 1000, 1000);
-				this.Host = this;
+				_detectionTime = new Timer(OnDetection, null, 1000, 1000);
+
+				Host = this;
 			}
 			else
 			{
-				this.Host = hostHandler;
+				Host = hostHandler;
 			}
 		}
 
-		private System.Threading.Timer mDetectionTime;
+		#endregion
 
-		private static RedisDB mDefault = new RedisDB();
-
-		internal static RedisDB Default => mDefault;
+		internal static RedisDB Default { get; } = new RedisDB();
 
 		public IHostHandler Host { get; set; }
 
 		private void OnDetection(object state)
 		{
-			mDetectionTime.Change(-1, -1);
+			_detectionTime.Change(-1, -1);
 
-			RedisHost[] wHosts = mWriteActives;
+			RedisHost[] wHosts = _writeActives;
 			foreach (RedisHost item in wHosts)
+			{
 				item.Ping();
-			RedisHost[] rHost = mReadActives;
+			}
+
+			RedisHost[] rHost = _readActives;
 			foreach (RedisHost item in rHost)
+			{
 				item.Ping();
-			mDetectionTime.Change(1000, 1000);
+			}
+
+			_detectionTime.Change(1000, 1000);
 
 		}
 
 		public IDataFormater DataFormater { get; set; }
-
-		private List<RedisHost> mWriteHosts = new List<RedisHost>();
-
-		private List<RedisHost> mReadHosts = new List<RedisHost>();
-
-		private RedisHost[] mWriteActives = new RedisHost[0];
-
-		private RedisHost[] mReadActives = new RedisHost[0];
 
 		private bool OnClientPush(RedisClient client)
 		{
@@ -63,61 +72,75 @@ namespace BeetleX.Redis
 
 		public RedisDB Cloneable(IDataFormater dataFormater = null)
 		{
-			RedisDB result = new RedisDB(this.DB, dataFormater, this);
+			RedisDB result = new RedisDB(DB, dataFormater, this);
 			return result;
 		}
 
-		RedisHost IHostHandler.AddWriteHost(string host, int port = 6379)
-		{
-			return ((IHostHandler)this).AddWriteHost(host, port, false);
-		}
+		#region IHostHandler Implementation
 
-		RedisHost IHostHandler.AddReadHost(string host, int port = 6379)
+		RedisHost IHostHandler.AddReadHost(string host, int port)
 		{
 			return ((IHostHandler)this).AddReadHost(host, port, false);
-		}
-
-		RedisHost IHostHandler.AddWriteHost(string host, int port, bool ssl)
-		{
-			if (port == 0)
-				port = 6379;
-			RedisHost redisHost = new RedisHost(ssl, DB, host, port);
-			mWriteHosts.Add(redisHost);
-			mWriteActives = mWriteHosts.ToArray();
-			return redisHost;
 		}
 
 		RedisHost IHostHandler.AddReadHost(string host, int port, bool ssl)
 		{
 			if (port == 0)
+			{
 				port = 6379;
+			}
+
 			RedisHost redisHost = new RedisHost(ssl, DB, host, port);
-			mReadHosts.Add(redisHost);
-			mReadActives = mReadHosts.ToArray();
+			_readHosts.Add(redisHost);
+			_readActives = _readHosts.ToArray();
 			return redisHost;
 		}
 
-		RedisHost IHostHandler.GetWriteHost()
+		RedisHost IHostHandler.AddWriteHost(string host, int port)
 		{
-			RedisHost[] items = mWriteActives;
-			for (int i = 0; i < items.Length; i++)
+			return ((IHostHandler)this).AddWriteHost(host, port, false);
+		}
+
+		RedisHost IHostHandler.AddWriteHost(string host, int port, bool ssl)
+		{
+			if (port == 0)
 			{
-				if (items[i].Available)
-					return items[i];
+				port = 6379;
 			}
-			return null;
+
+			RedisHost redisHost = new RedisHost(ssl, DB, host, port);
+			_writeHosts.Add(redisHost);
+			_writeActives = _writeHosts.ToArray();
+			return redisHost;
 		}
 
 		RedisHost IHostHandler.GetReadHost()
 		{
-			RedisHost[] items = mReadActives;
+			RedisHost[] items = _readActives;
 			for (int i = 0; i < items.Length; i++)
 			{
 				if (items[i].Available)
+				{
 					return items[i];
+				}
 			}
 			return Host.GetWriteHost();
 		}
+
+		RedisHost IHostHandler.GetWriteHost()
+		{
+			RedisHost[] items = _writeActives;
+			for (int i = 0; i < items.Length; i++)
+			{
+				if (items[i].Available)
+				{
+					return items[i];
+				}
+			}
+			return null;
+		}
+
+		#endregion
 
 		public Subscriber Subscribe()
 		{
@@ -134,7 +157,10 @@ namespace BeetleX.Redis
 			}
 			RedisClient client = await host.Pop();
 			if (client == null)
+			{
 				return new Result() { ResultType = ResultType.NetError, Messge = "exceeding maximum number of connections" };
+			}
+
 			Result result = host.Connect(client);
 			if (result.IsError)
 			{
@@ -152,7 +178,10 @@ namespace BeetleX.Redis
 			Commands.FLUSHALL cmd = new Commands.FLUSHALL();
 			Result result = await Execute(cmd, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (string)result.Value;
 		}
 
@@ -161,7 +190,10 @@ namespace BeetleX.Redis
 			Commands.PING ping = new Commands.PING(null);
 			Result result = await Execute(ping, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return true;
 		}
 
@@ -170,7 +202,10 @@ namespace BeetleX.Redis
 			Commands.DEL del = new Commands.DEL(key);
 			Result result = await Execute(del, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (long)result.Value;
 		}
 
@@ -195,7 +230,10 @@ namespace BeetleX.Redis
 			set.NX = nx;
 			Result result = await Execute(set, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (string)result.Value;
 
 		}
@@ -205,7 +243,10 @@ namespace BeetleX.Redis
 			Commands.DUMP dump = new Commands.DUMP(key);
 			Result result = await Execute(dump, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (string)result.Value;
 		}
 
@@ -214,7 +255,10 @@ namespace BeetleX.Redis
 			Commands.EXISTS exists = new Commands.EXISTS(key);
 			Result result = await Execute(exists, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (long)result.Value;
 		}
 
@@ -223,7 +267,10 @@ namespace BeetleX.Redis
 			Commands.EXPIRE expire = new Commands.EXPIRE(key, seconds);
 			Result result = await Execute(expire, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (long)result.Value;
 		}
 
@@ -232,7 +279,10 @@ namespace BeetleX.Redis
 			Commands.TTL cmd = new Commands.TTL(key);
 			Result result = await Execute(cmd, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (long)result.Value;
 		}
 
@@ -241,7 +291,10 @@ namespace BeetleX.Redis
 			Commands.PTTL cmd = new Commands.PTTL(key);
 			Result result = await Execute(cmd, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (long)result.Value;
 		}
 
@@ -250,7 +303,10 @@ namespace BeetleX.Redis
 			Commands.EXPIREAT cmd = new Commands.EXPIREAT(key, timestamp);
 			Result result = await Execute(cmd, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (long)result.Value;
 		}
 
@@ -263,7 +319,10 @@ namespace BeetleX.Redis
 			}
 			Result result = await Execute(cmd, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (string)result.Value;
 		}
 
@@ -276,7 +335,10 @@ namespace BeetleX.Redis
 			}
 			Result result = await Execute(cmd, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (long)result.Value;
 		}
 
@@ -285,7 +347,10 @@ namespace BeetleX.Redis
 			Commands.GET cmd = new Commands.GET(key, DataFormater);
 			Result result = await Execute(cmd, typeof(T));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (T)result.Value;
 		}
 
@@ -294,7 +359,10 @@ namespace BeetleX.Redis
 			Commands.KEYS cmd = new Commands.KEYS(pattern);
 			Result result = await Execute(cmd, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (from a in result.Data select (string)a.Data).ToArray();
 		}
 
@@ -303,7 +371,10 @@ namespace BeetleX.Redis
 			Commands.MOVE cmd = new Commands.MOVE(key, db);
 			Result result = await Execute(cmd, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (long)result.Value;
 		}
 
@@ -312,7 +383,10 @@ namespace BeetleX.Redis
 			Commands.PERSIST cmd = new Commands.PERSIST(key);
 			Result result = await Execute(cmd, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (long)result.Value;
 		}
 
@@ -321,7 +395,10 @@ namespace BeetleX.Redis
 			Commands.PEXPIRE cmd = new Commands.PEXPIRE(key, milliseconds);
 			Result result = await Execute(cmd, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (long)result.Value;
 		}
 
@@ -330,7 +407,10 @@ namespace BeetleX.Redis
 			Commands.PEXPIREAT cmd = new Commands.PEXPIREAT(key, timestamp);
 			Result result = await Execute(cmd, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (long)result.Value;
 		}
 
@@ -339,7 +419,10 @@ namespace BeetleX.Redis
 			Commands.RANDOMKEY cmd = new Commands.RANDOMKEY();
 			Result result = await Execute(cmd, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (string)result.Value;
 		}
 
@@ -348,7 +431,10 @@ namespace BeetleX.Redis
 			Commands.RENAME cmd = new Commands.RENAME(key, newkey);
 			Result result = await Execute(cmd, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (string)result.Value;
 		}
 
@@ -357,7 +443,10 @@ namespace BeetleX.Redis
 			Commands.RENAMENX cmd = new Commands.RENAMENX(key, newkey);
 			Result result = await Execute(cmd, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (long)result.Value;
 		}
 
@@ -366,7 +455,10 @@ namespace BeetleX.Redis
 			Commands.TOUCH cmd = new Commands.TOUCH(keys);
 			Result result = await Execute(cmd, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (long)result.Value;
 		}
 
@@ -375,7 +467,10 @@ namespace BeetleX.Redis
 			Commands.TYPE cmd = new Commands.TYPE(key);
 			Result result = await Execute(cmd, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (string)result.Value;
 		}
 
@@ -384,7 +479,10 @@ namespace BeetleX.Redis
 			Commands.UNLINK cmd = new Commands.UNLINK(keys);
 			Result result = await Execute(cmd, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (long)result.Value;
 		}
 
@@ -393,7 +491,10 @@ namespace BeetleX.Redis
 			Commands.DECR cmd = new Commands.DECR(key);
 			Result result = await Execute(cmd, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (long)result.Value;
 		}
 
@@ -402,7 +503,10 @@ namespace BeetleX.Redis
 			Commands.DECRBY cmd = new Commands.DECRBY(key, decrement);
 			Result result = await Execute(cmd, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (long)result.Value;
 		}
 
@@ -411,7 +515,10 @@ namespace BeetleX.Redis
 			Commands.SETBIT cmd = new Commands.SETBIT(key, offset, value);
 			Result result = await Execute(cmd, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (long)result.Value;
 		}
 
@@ -420,7 +527,10 @@ namespace BeetleX.Redis
 			Commands.GETBIT cmd = new Commands.GETBIT(key, offset);
 			Result result = await Execute(cmd, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (long)result.Value;
 		}
 
@@ -429,7 +539,10 @@ namespace BeetleX.Redis
 			Commands.GETRANGE cmd = new Commands.GETRANGE(key, start, end);
 			Result result = await Execute(cmd, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (string)result.Value;
 		}
 
@@ -438,7 +551,10 @@ namespace BeetleX.Redis
 			Commands.GETSET cmd = new Commands.GETSET(key, value, DataFormater);
 			Result result = await Execute(cmd, typeof(T));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (T)result.Value;
 		}
 
@@ -447,7 +563,10 @@ namespace BeetleX.Redis
 			Commands.INCR cmd = new Commands.INCR(key);
 			Result result = await Execute(cmd, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (long)result.Value;
 		}
 
@@ -456,7 +575,10 @@ namespace BeetleX.Redis
 			Commands.INCRBY cmd = new Commands.INCRBY(key, increment);
 			Result result = await Execute(cmd, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (long)result.Value;
 		}
 
@@ -465,7 +587,10 @@ namespace BeetleX.Redis
 			Commands.INCRBYFLOAT cmd = new Commands.INCRBYFLOAT(key, increment);
 			Result result = await Execute(cmd, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return float.Parse((string)result.Value);
 		}
 
@@ -506,7 +631,10 @@ namespace BeetleX.Redis
 			Commands.MGET cmd = new Commands.MGET(DataFormater, keys);
 			Result result = await Execute(cmd, types);
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (from a in result.Data select a.Data).ToArray();
 
 		}
@@ -516,7 +644,10 @@ namespace BeetleX.Redis
 			Commands.PSETEX cmd = new Commands.PSETEX(key, milliseconds, value, DataFormater);
 			Result result = await Execute(cmd, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (string)result.Value;
 		}
 
@@ -525,7 +656,10 @@ namespace BeetleX.Redis
 			Commands.SETEX cmd = new Commands.SETEX(key, seconds, value, DataFormater);
 			Result result = await Execute(cmd, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (string)result.Value;
 		}
 
@@ -534,7 +668,10 @@ namespace BeetleX.Redis
 			Commands.SETNX cmd = new Commands.SETNX(key, value, DataFormater);
 			Result result = await Execute(cmd, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (long)result.Value;
 		}
 
@@ -543,7 +680,10 @@ namespace BeetleX.Redis
 			Commands.SETRANGE cmd = new Commands.SETRANGE(key, offset, value);
 			Result result = await Execute(cmd, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (long)result.Value;
 		}
 
@@ -552,7 +692,10 @@ namespace BeetleX.Redis
 			Commands.STRLEN cmd = new Commands.STRLEN(key);
 			Result result = await Execute(cmd, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (long)result.Value;
 		}
 
@@ -576,10 +719,11 @@ namespace BeetleX.Redis
 			Commands.PUBLISH cmd = new Commands.PUBLISH(channel, data, DataFormater);
 			Result result = await Execute(cmd, typeof(string));
 			if (result.IsError)
+			{
 				throw new RedisException(result.Messge);
+			}
+
 			return (long)result.Value;
 		}
-
-
 	}
 }

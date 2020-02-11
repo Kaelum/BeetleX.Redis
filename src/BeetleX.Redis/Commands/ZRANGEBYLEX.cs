@@ -32,13 +32,20 @@ namespace BeetleX.Redis.Commands
             base.OnExecute();
             AddText(Key);
             if (Negative)
-                AddText("-");
-            else
-                AddText("+");
-            AddText(Min);
+			{
+				AddText("-");
+			}
+			else
+			{
+				AddText("+");
+			}
+
+			AddText(Min);
             if (!string.IsNullOrEmpty(Max))
-                AddText(Max);
-        }
+			{
+				AddText(Max);
+			}
+		}
     }
 
 

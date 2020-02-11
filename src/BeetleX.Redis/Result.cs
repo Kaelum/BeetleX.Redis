@@ -25,9 +25,9 @@ namespace BeetleX.Redis
 		{
 			get
 			{
-				return (this.ResultType == ResultType.DataError ||
-					 this.ResultType == ResultType.Error
-					 || this.ResultType == ResultType.NetError);
+				return (ResultType == ResultType.DataError ||
+					 ResultType == ResultType.Error
+					 || ResultType == ResultType.NetError);
 			}
 		}
 
@@ -36,7 +36,10 @@ namespace BeetleX.Redis
 			get
 			{
 				if (Data.Count > 0)
+				{
 					return Data[0].Data;
+				}
+
 				return Messge;
 			}
 		}

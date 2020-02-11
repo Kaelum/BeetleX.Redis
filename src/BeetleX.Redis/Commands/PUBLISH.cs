@@ -7,7 +7,7 @@ namespace BeetleX.Redis.Commands
     public class PUBLISH : Command
     {
 
-        public PUBLISH(string channel, Object message, IDataFormater dataFormater)
+        public PUBLISH(string channel, object message, IDataFormater dataFormater)
         {
             DataFormater = dataFormater;
             Channel = channel;

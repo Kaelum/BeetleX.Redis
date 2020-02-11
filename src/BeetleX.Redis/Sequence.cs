@@ -21,12 +21,18 @@ namespace BeetleX.Redis
         public async ValueTask<long> ZAdd(params (double, string)[] items)
         {
             if (items == null || items.Length == 0)
-                return 0;
-            ZADD cmd = new ZADD(Key, items);
+			{
+				return 0;
+			}
+
+			ZADD cmd = new ZADD(Key, items);
 			Result result = await DB.Execute(cmd, typeof(long));
             if (result.IsError)
-                throw new RedisException(result.Messge);
-            return (long)result.Value;
+			{
+				throw new RedisException(result.Messge);
+			}
+
+			return (long)result.Value;
         }
 
         public async ValueTask<double> ZScore(string member)
@@ -34,8 +40,11 @@ namespace BeetleX.Redis
             ZSCORE cmd = new ZSCORE(Key, member);
 			Result result = await DB.Execute(cmd, typeof(string));
             if (result.IsError)
-                throw new RedisException(result.Messge);
-            return System.Convert.ToDouble(result.Value);
+			{
+				throw new RedisException(result.Messge);
+			}
+
+			return System.Convert.ToDouble(result.Value);
         }
 
         public async ValueTask<double> ZIncrby(double increment, string member)
@@ -43,8 +52,11 @@ namespace BeetleX.Redis
             ZINCRBY cmd = new ZINCRBY(Key, increment, member);
 			Result result = await DB.Execute(cmd, typeof(string));
             if (result.IsError)
-                throw new RedisException(result.Messge);
-            return System.Convert.ToDouble(result.Value);
+			{
+				throw new RedisException(result.Messge);
+			}
+
+			return System.Convert.ToDouble(result.Value);
         }
 
         public async ValueTask<long> ZCard()
@@ -52,8 +64,11 @@ namespace BeetleX.Redis
             ZCARD cmd = new ZCARD(Key);
 			Result result = await DB.Execute(cmd, typeof(string));
             if (result.IsError)
-                throw new RedisException(result.Messge);
-            return System.Convert.ToInt64(result.Value);
+			{
+				throw new RedisException(result.Messge);
+			}
+
+			return System.Convert.ToInt64(result.Value);
         }
 
         public async ValueTask<long> ZCount(double min, double max)
@@ -61,16 +76,22 @@ namespace BeetleX.Redis
             ZCOUNT cmd = new ZCOUNT(Key, min, max);
 			Result result = await DB.Execute(cmd, typeof(string));
             if (result.IsError)
-                throw new RedisException(result.Messge);
-            return System.Convert.ToInt64(result.Value);
+			{
+				throw new RedisException(result.Messge);
+			}
+
+			return System.Convert.ToInt64(result.Value);
         }
         public async ValueTask<List<(double Score, string Member)>> ZRange(int start, int stop, bool withscores = false)
         {
             ZRANGE cmd = new ZRANGE(Key, start, stop, withscores);
 			Result result = await DB.Execute(cmd, typeof(string));
             if (result.IsError)
-                throw new RedisException(result.Messge);
-            return GetItems(result, withscores);
+			{
+				throw new RedisException(result.Messge);
+			}
+
+			return GetItems(result, withscores);
         }
 
         private List<(double Score, string Member)> GetItems(Result result, bool withscores)
@@ -82,8 +103,11 @@ namespace BeetleX.Redis
                 item.Member = result.Data[i].Data.ToString();
                 item.Score = 0;
                 if (withscores)
-                    item.Score = System.Convert.ToDouble(result.Data[i + 1].Data);
-                items.Add(item);
+				{
+					item.Score = System.Convert.ToDouble(result.Data[i + 1].Data);
+				}
+
+				items.Add(item);
             }
             return items;
         }
@@ -93,8 +117,11 @@ namespace BeetleX.Redis
             ZREVRANGE cmd = new ZREVRANGE(Key, start, stop, withscores);
 			Result result = await DB.Execute(cmd, typeof(string));
             if (result.IsError)
-                throw new RedisException(result.Messge);
-            return GetItems(result, withscores);
+			{
+				throw new RedisException(result.Messge);
+			}
+
+			return GetItems(result, withscores);
         }
 
         public async ValueTask<List<(double Score, string Member)>> ZRangeByScore(string min, string max, bool withscores = false)
@@ -102,8 +129,11 @@ namespace BeetleX.Redis
             ZRANGEBYSCORE cmd = new ZRANGEBYSCORE(Key, min, max, withscores);
 			Result result = await DB.Execute(cmd, typeof(string));
             if (result.IsError)
-                throw new RedisException(result.Messge);
-            return GetItems(result, withscores);
+			{
+				throw new RedisException(result.Messge);
+			}
+
+			return GetItems(result, withscores);
         }
 
         public async ValueTask<List<(double Score, string Member)>> ZRevRangeByScore(string max, string min, bool withscores = false)
@@ -111,8 +141,11 @@ namespace BeetleX.Redis
             ZREVRANGEBYSCORE cmd = new ZREVRANGEBYSCORE(Key, max, min, withscores);
 			Result result = await DB.Execute(cmd, typeof(string));
             if (result.IsError)
-                throw new RedisException(result.Messge);
-            return GetItems(result, withscores);
+			{
+				throw new RedisException(result.Messge);
+			}
+
+			return GetItems(result, withscores);
         }
 
         public async ValueTask<long> ZRank(string member)
@@ -120,8 +153,11 @@ namespace BeetleX.Redis
             ZRANK cmd = new ZRANK(Key, member);
 			Result result = await DB.Execute(cmd, typeof(string));
             if (result.IsError)
-                throw new RedisException(result.Messge);
-            return System.Convert.ToInt64(result.Value);
+			{
+				throw new RedisException(result.Messge);
+			}
+
+			return System.Convert.ToInt64(result.Value);
         }
 
         public async ValueTask<long> ZRevRank(string member)
@@ -129,19 +165,28 @@ namespace BeetleX.Redis
             ZREVRANK cmd = new ZREVRANK(Key, member);
 			Result result = await DB.Execute(cmd, typeof(string));
             if (result.IsError)
-                throw new RedisException(result.Messge);
-            return System.Convert.ToInt64(result.Value);
+			{
+				throw new RedisException(result.Messge);
+			}
+
+			return System.Convert.ToInt64(result.Value);
         }
 
         public async ValueTask<long> ZRem(params string[] members)
         {
             if (members == null || members.Length == 0)
-                return 0;
-            ZREM cmd = new ZREM(Key, members);
+			{
+				return 0;
+			}
+
+			ZREM cmd = new ZREM(Key, members);
 			Result result = await DB.Execute(cmd, typeof(string));
             if (result.IsError)
-                throw new RedisException(result.Messge);
-            return System.Convert.ToInt64(result.Value);
+			{
+				throw new RedisException(result.Messge);
+			}
+
+			return System.Convert.ToInt64(result.Value);
         }
 
         public async ValueTask<long> ZRemRangeByRank(int start, int stop)
@@ -149,8 +194,11 @@ namespace BeetleX.Redis
             ZREMRANGEBYRANK cmd = new ZREMRANGEBYRANK(Key, start, stop);
 			Result result = await DB.Execute(cmd, typeof(string));
             if (result.IsError)
-                throw new RedisException(result.Messge);
-            return System.Convert.ToInt64(result.Value);
+			{
+				throw new RedisException(result.Messge);
+			}
+
+			return System.Convert.ToInt64(result.Value);
         }
 
         public async ValueTask<long> ZRemRangeByScore(double min, double max)
@@ -158,8 +206,11 @@ namespace BeetleX.Redis
             ZREMRANGEBYSCORE cmd = new ZREMRANGEBYSCORE(Key, min, max);
 			Result result = await DB.Execute(cmd, typeof(string));
             if (result.IsError)
-                throw new RedisException(result.Messge);
-            return System.Convert.ToInt64(result.Value);
+			{
+				throw new RedisException(result.Messge);
+			}
+
+			return System.Convert.ToInt64(result.Value);
         }
 
         public async ValueTask<List<string>> ZRangeByLex(string min, string max, bool negative = true)
@@ -167,8 +218,11 @@ namespace BeetleX.Redis
             ZRANGEBYLEX cmd = new ZRANGEBYLEX(Key, min, max, negative);
 			Result result = await DB.Execute(cmd, typeof(string));
             if (result.IsError)
-                throw new RedisException(result.Messge);
-            List<string> items = new List<string>();
+			{
+				throw new RedisException(result.Messge);
+			}
+
+			List<string> items = new List<string>();
             foreach (ResultItem item in result.Data)
             {
                 items.Add(item.Data.ToString());
@@ -181,8 +235,11 @@ namespace BeetleX.Redis
             ZLEXCOUNT cmd = new ZLEXCOUNT(Key, min, max, negative);
 			Result result = await DB.Execute(cmd, typeof(string));
             if (result.IsError)
-                throw new RedisException(result.Messge);
-            return System.Convert.ToInt64(result.Value);
+			{
+				throw new RedisException(result.Messge);
+			}
+
+			return System.Convert.ToInt64(result.Value);
         }
 
         public async ValueTask<List<string>> ZRemRangeByLex(string min, string max)
@@ -190,8 +247,11 @@ namespace BeetleX.Redis
             ZREMRANGEBYLEX cmd = new ZREMRANGEBYLEX(Key, min, max);
 			Result result = await DB.Execute(cmd, typeof(string));
             if (result.IsError)
-                throw new RedisException(result.Messge);
-            List<string> items = new List<string>();
+			{
+				throw new RedisException(result.Messge);
+			}
+
+			List<string> items = new List<string>();
             foreach (ResultItem item in result.Data)
             {
                 items.Add(item.Data.ToString());
@@ -202,8 +262,11 @@ namespace BeetleX.Redis
         public ValueTask<long> ZUnionsStore(params string[] keys)
         {
             if (keys == null || keys.Length == 0)
-                return new ValueTask<long>(0);
-            (string key, double weight)[] items = new (string key, double weight)[keys.Length];
+			{
+				return new ValueTask<long>(0);
+			}
+
+			(string key, double weight)[] items = new (string key, double weight)[keys.Length];
             for (int i = 0; i < keys.Length; i++)
             {
                 items[i].key = keys[i];
@@ -222,8 +285,11 @@ namespace BeetleX.Redis
             ZUNIONSTORE cmd = new ZUNIONSTORE(Key, type, items);
 			Result result = await DB.Execute(cmd, typeof(string));
             if (result.IsError)
-                throw new RedisException(result.Messge);
-            return System.Convert.ToInt64(result.Value);
+			{
+				throw new RedisException(result.Messge);
+			}
+
+			return System.Convert.ToInt64(result.Value);
         }
 
 
@@ -231,8 +297,11 @@ namespace BeetleX.Redis
         public ValueTask<long> ZInterStore(params string[] keys)
         {
             if (keys == null || keys.Length == 0)
-                return new ValueTask<long>(0);
-            (string key, double weight)[] items = new (string key, double weight)[keys.Length];
+			{
+				return new ValueTask<long>(0);
+			}
+
+			(string key, double weight)[] items = new (string key, double weight)[keys.Length];
             for (int i = 0; i < keys.Length; i++)
             {
                 items[i].key = keys[i];
@@ -251,8 +320,11 @@ namespace BeetleX.Redis
             ZINTERSTORE cmd = new ZINTERSTORE(Key, type, items);
 			Result result = await DB.Execute(cmd, typeof(string));
             if (result.IsError)
-                throw new RedisException(result.Messge);
-            return System.Convert.ToInt64(result.Value);
+			{
+				throw new RedisException(result.Messge);
+			}
+
+			return System.Convert.ToInt64(result.Value);
         }
     }
 }
